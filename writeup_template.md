@@ -42,7 +42,7 @@ python drive.py model.h5
 
 ## Model Architecture and Training Strategy
 
-####1. An appropriate model architecture has been employed
+#### 1. An appropriate model architecture has been employed
 Now I adopted nvidia model. Network is expressed as follows:
 
 |Layer (type)|	Output Shape|	Params|	Connected to|
@@ -60,7 +60,7 @@ Now I adopted nvidia model. Network is expressed as follows:
 |dense_4 (Dense)|	(None, 1)	|11	|dense_3|
 
 
-####2. Attempts to reduce overfitting in the model
+#### 2. Attempts to reduce overfitting in the model
 In order to reduce overfitting, I used data augmentation.
 Multi-view camera is used, and mirrored image is created as below:
 
@@ -93,16 +93,18 @@ inverse_right_angle = right_angle*-1.0
 ![alt text][image3]
 
 
-####3. Model parameter tuning
+#### 3. Model parameter tuning
 
 The model used an adam optimizer, so the learning rate was not tuned manually.
 
-####4. Appropriate training data
+#### 4. Appropriate training data
 I used pre-captured dataset provided by Udacity.
 
-###Model Architecture and Training Strategy
+***
 
-####1. Solution Design Approach
+## Model Architecture and Training Strategy
+
+#### 1. Solution Design Approach
 I did some data augmentation.
 But it seems still seems to have overfitting.
 
@@ -111,6 +113,6 @@ But it seems still seems to have overfitting.
 
 I need some improvents for this.
 
-####2. Output Movie
+#### 2. Output Movie
 ![alt text][video1]
 Here's a [link to my video result](./output.mp4). I'm afraid this still needs to be improved.
