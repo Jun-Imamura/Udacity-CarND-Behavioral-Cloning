@@ -5,9 +5,11 @@ import numpy as np
 import sklearn
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Dropout, ELU
-from keras.layers import Lambda
+from keras.layers.core import Activation
+from keras.layers import Lambda, MaxPooling2D
 from keras.layers.convolutional import Convolution2D
 from keras.layers import Cropping2D
+from keras.layers.normalization import BatchNormalization
 
 from keras.models import Model
 import matplotlib
@@ -63,7 +65,7 @@ def generator(samples, batch_size=32):
 
             images = []
             angles = []
-            correction = 0.15
+            correction = 0.20
             for batch_sample in batch_samples:
                 name = './data/IMG/'+batch_sample[0].split('/')[-1]
                 center_image = cv2.imread(name)
@@ -114,11 +116,14 @@ model.add(Convolution2D(24, 5, 5, subsample=(2,2), activation="relu"))
 model.add(Convolution2D(36, 5, 5, subsample=(2,2), activation="relu"))
 model.add(Convolution2D(48, 5, 5, subsample=(2,2), activation="relu"))
 model.add(Convolution2D(64, 3, 3, activation="relu"))
+model.add(Dropout(0.5))
 model.add(Convolution2D(64, 3, 3, activation="relu"))
+model.add(Dropout(0.5))
 model.add(Flatten())
-model.add(Dense(100))
 model.add(Dense(50))
-model.add(Dense(10))
+model.add(Dropout(0.5))
+model.add(Dense(5))
+model.add(Dropout(0.5))
 model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')

@@ -1068,7 +1068,14 @@ MathJax.Hub.Config({
 <hr />
 <h2 id="model-architecture-and-training-strategy"><a name="user-content-model-architecture-and-training-strategy" href="#model-architecture-and-training-strategy" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Model Architecture and Training Strategy</h2>
 <h4 id="1-an-appropriate-model-architecture-has-been-employed"><a name="user-content-1-an-appropriate-model-architecture-has-been-employed" href="#1-an-appropriate-model-architecture-has-been-employed" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. An appropriate model architecture has been employed</h4>
-<p>Now I adopted nvidia model. Network is expressed as follows:</p>
+<p>At first, I adopted nvidia model. Because the situation is quite similar to what we want to do.<br />
+But this model goes overfitting because of few amount of data.</p>
+<p>So I tried to reduce complexity of the network:</p>
+<ul>
+<li>Fully connected layer is reduced from 4 to 3.</li>
+<li>Dropout layer is added from original.</li>
+</ul>
+<p>Final network architecture I used is expressed as follows:</p>
 <table>
 <thead>
 <tr>
@@ -1081,75 +1088,114 @@ MathJax.Hub.Config({
 <tbody>
 <tr>
 <td align="left">lambda_1 (Lambda)</td>
-<td>(None, 66, 200, 3)</td>
+<td>(None, 160, 320, 3))</td>
 <td>0</td>
 <td>lambda_input_1</td>
 </tr>
 <tr>
-<td align="left">convolution2d_1 (Convolution2D)</td>
-<td>(None, 31, 98, 24)</td>
-<td>1824</td>
+<td align="left">cropping2d_1 (Cropping2D)</td>
+<td>(None, 65, 320, 3)</td>
+<td>0</td>
 <td>lambda_1</td>
 </tr>
 <tr>
+<td align="left">convolution2d_1 (Convolution2D)</td>
+<td>(None, 31, 158, 24)</td>
+<td>1824</td>
+<td>cropping2d_1</td>
+</tr>
+<tr>
 <td align="left">convolution2d_2 (Convolution2D)</td>
-<td>(None, 14, 47, 36)</td>
+<td>(None, 14, 77, 36)</td>
 <td>21636</td>
 <td>convolution2d_1</td>
 </tr>
 <tr>
 <td align="left">convolution2d_3 (Convolution2D)</td>
-<td>(None, 5, 22, 48)</td>
+<td>(None, 5, 37, 48)</td>
 <td>43248</td>
 <td>convolution2d_2</td>
 </tr>
 <tr>
 <td align="left">convolution2d_4 (Convolution2D)</td>
-<td>(None, 3, 20, 64)</td>
+<td>(None, 3, 35, 64)</td>
 <td>27712</td>
 <td>convolution2d_3</td>
 </tr>
 <tr>
-<td align="left">convolution2d_5 (Convolution2D)</td>
-<td>(None, 1, 18, 64)</td>
-<td>36928</td>
+<td align="left">dropout_1 (Dropout)</td>
+<td>(None, 3, 35, 64)</td>
+<td>0</td>
 <td>convolution2d_4</td>
 </tr>
 <tr>
-<td align="left">flatten_1 (Flatten)</td>
-<td>(None, 1152)</td>
-<td>0</td>
+<td align="left">convolution2d_5 (Convolution2D)</td>
+<td>(None, 1, 33, 64)</td>
+<td>36928</td>
 <td>dropout_1</td>
 </tr>
 <tr>
+<td align="left">dropout_2 (Dropout)</td>
+<td>(None, 1, 33, 64)</td>
+<td>0</td>
+<td>convolution2d_5</td>
+</tr>
+<tr>
+<td align="left">flatten_1 (Flatten)</td>
+<td>(None, 2112)</td>
+<td>0</td>
+<td>dropout_2</td>
+</tr>
+<tr>
 <td align="left">dense_1 (Dense)</td>
-<td>(None, 100)</td>
-<td>115300</td>
+<td>(None, 50)</td>
+<td>105650</td>
 <td>flatten_1</td>
 </tr>
 <tr>
-<td align="left">dense_2 (Dense)</td>
+<td align="left">dropout_3 (Dropout)</td>
 <td>(None, 50)</td>
-<td>5050</td>
+<td>0</td>
 <td>dense_1</td>
 </tr>
 <tr>
-<td align="left">dense_3 (Dense)</td>
-<td>(None, 10)</td>
-<td>510</td>
+<td align="left">dense_2 (Dense)</td>
+<td>(None, 5)</td>
+<td>255</td>
+<td>dropout_3</td>
+</tr>
+<tr>
+<td align="left">dropout_4 (Dropout)</td>
+<td>(None, 5)</td>
+<td>0</td>
 <td>dense_2</td>
 </tr>
 <tr>
-<td align="left">dense_4 (Dense)</td>
+<td align="left">dense_3 (Dense)</td>
 <td>(None, 1)</td>
-<td>11</td>
-<td>dense_3</td>
+<td>6</td>
+<td>dropout_4</td>
 </tr>
 </tbody>
 </table>
+<p>Total params: 237,259<br />
+sTrainable params: 237,259<br />
+Non-trainable params: 0</p>
 <h4 id="2-attempts-to-reduce-overfitting-in-the-model"><a name="user-content-2-attempts-to-reduce-overfitting-in-the-model" href="#2-attempts-to-reduce-overfitting-in-the-model" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2. Attempts to reduce overfitting in the model</h4>
 <p>In order to reduce overfitting, I used data augmentation.<br />
 Multi-view camera is used, and mirrored image is created as below:</p>
+<h6 id="center-camera"><a name="user-content-center-camera" href="#center-camera" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Center Camera</h6>
+<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_image/center.jpg" /></p>
+<h6 id="left-camera"><a name="user-content-left-camera" href="#left-camera" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Left Camera</h6>
+<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_image/left.jpg" /></p>
+<h6 id="right-camera"><a name="user-content-right-camera" href="#right-camera" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Right Camera</h6>
+<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_image/right.jpg" /></p>
+<p>In these side camera information, steering angle is modified so that the vehicle tries to keep the center of the road.<br />
+The variable <code>correction</code> is added/subtracted from original training data.</p>
+<h6 id="mirroring"><a name="user-content-mirroring" href="#mirroring" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Mirroring</h6>
+<p>This circuit data mostly contains counter clockwise driving, so I need to augment data by inversing the image and training value.</p>
+<h6 id="code-example"><a name="user-content-code-example" href="#code-example" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Code Example</h6>
+<p>Multi viewing and mirroring was done as follows:</p>
 <pre><code>name = './data/IMG/'+batch_sample[0].split('/')[-1]
 center_image = cv2.imread(name)
 center_angle = float(batch_sample[3])
@@ -1168,23 +1214,23 @@ inverse_right_image = cv2.flip(right_image, 1)
 inverse_right_angle = right_angle*-1.0
 </code></pre>
 
-<h6 id="center-camera"><a name="user-content-center-camera" href="#center-camera" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Center Camera</h6>
-<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_image/center.jpg" /></p>
-<h6 id="left-camera"><a name="user-content-left-camera" href="#left-camera" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Left Camera</h6>
-<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_image/left.jpg" /></p>
-<h6 id="right-camera"><a name="user-content-right-camera" href="#right-camera" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Right Camera</h6>
-<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_image/right.jpg" /></p>
+<p>Value of the variable <code>correction</code> is 0.20. Because when I use 0.15, the vehicle fail to take strong curve before the bridge.</p>
 <h4 id="3-model-parameter-tuning"><a name="user-content-3-model-parameter-tuning" href="#3-model-parameter-tuning" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>3. Model parameter tuning</h4>
 <p>The model used an adam optimizer, so the learning rate was not tuned manually.</p>
 <h4 id="4-appropriate-training-data"><a name="user-content-4-appropriate-training-data" href="#4-appropriate-training-data" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>4. Appropriate training data</h4>
-<p>I used pre-captured dataset provided by Udacity.</p>
+<p>Basically, I used pre-captured dataset provided by Udacity.<br />
+But even after eliminating overfitting, the vehicle couldn&rsquo;t pass through the bridge and dirt area.<br />
+So I decided to augment these two parts by copy/pasting so that the amount of such a rare situation gains more effect in the final model.</p>
 <hr />
 <h2 id="model-architecture-and-training-strategy_1"><a name="user-content-model-architecture-and-training-strategy_1" href="#model-architecture-and-training-strategy_1" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>Model Architecture and Training Strategy</h2>
 <h4 id="1-solution-design-approach"><a name="user-content-1-solution-design-approach" href="#1-solution-design-approach" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>1. Solution Design Approach</h4>
-<p>I did some data augmentation.<br />
-But it seems still seems to have overfitting.</p>
+<p>Firstly, I used nvidia model first, and it turned out that there are overfitting (multi-viewing and mirroing was already done before this 1st attempt)).<br />
+Then I did network architecture modification by reducing the complexity of network, with dropout.</p>
+<p>Then I could elimiate overfitting.</p>
+<p>But, when I tried the model, the vehicle couldn&rsquo;t pass the bridge, or course out to dirt after the bridge. This problem couldn&rsquo;t be solved easily by architecture modification.<br />
+So I tried to augment such a rare case by simply copying and pasting. (more precisely, I modified <code>driving_log.csv</code>)</p>
+<p>In the final model, you can see the train/test error has similar trend via iteration.</p>
 <p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_image/output.png" /></p>
-<p>I need some improvents for this.</p>
 <h4 id="2-output-movie"><a name="user-content-2-output-movie" href="#2-output-movie" class="headeranchor-link" aria-hidden="true"><span class="headeranchor"></span></a>2. Output Movie</h4>
-<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_video.mp4" /><br />
-Here&rsquo;s a <a href="./output.mp4">link to my video result</a>. I&rsquo;m afraid this still needs to be improved.</p></article></body></html>
+<p><img alt="alt text" src="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_video.mp4" /></p>
+<p>Here&rsquo;s a <a href="///C://Users/imach/Desktop/Udacity/CarND-Behavioral-Cloning-P3/output_video.mp4">link to my video result</a>. </p></article></body></html>
